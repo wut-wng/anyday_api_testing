@@ -1,0 +1,1503 @@
+{
+	"info": {
+		"_postman_id": "0908bee1-655d-4a1d-9f5e-dd8d5ac226c9",
+		"name": "Anyday",
+		"description": "# Introduction\nAutomate test tool to help dev/qa to check on the basic payment functions.\n\n# Overview\n* Your must select the Environment.\n* \"Initial / Initial\" request must be run.\n* \"Login / Login as superadmin\" request can generate admin token.\n* \"Login / Login as merchant\" or \"Merchant / Create merchant\" request can generate merchant/webshop token.\n* \"Login / Login as debtor\" or \"Debtor / Create debtor\" request can generate debtor token.\n\n# Authentication\nUsing Bearer token which can get by \"Login\", \"Create debtor\" or \"Create merchant\".",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9782619"
+	},
+	"item": [
+		{
+			"name": "Initial",
+			"item": [
+				{
+					"name": "Initial",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.globals.set('loadUtils', function loadUtils() {\r",
+									"    const authNames = {\r",
+									"        admin: 'admin_auth',\r",
+									"        merchant: 'merchant_auth',\r",
+									"        debtor: 'debtor_auth'\r",
+									"    };\r",
+									"    let utils = {};\r",
+									"    let useToken = function (name) {\r",
+									"        try {\r",
+									"            const data = JSON.parse(pm.collectionVariables.get(name));\r",
+									"            pm.collectionVariables.set(\"token\", data.auth.access_token);\r",
+									"            pm.collectionVariables.set(\"refresh_token\", data.auth.refresh_token);\r",
+									"            pm.collectionVariables.set(\"current_user\", data.email);\r",
+									"            pm.collectionVariables.set(\"current_auth\", data.auth_name);\r",
+									"        }\r",
+									"        catch {\r",
+									"            throw new Error(name + ' is invalid.');\r",
+									"        }\r",
+									"    };\r",
+									"    let saveToken = function (name, data) {\r",
+									"        data.auth_name = name;\r",
+									"        pm.collectionVariables.set(name, JSON.stringify(data));\r",
+									"    };\r",
+									"\r",
+									"    utils.useAdminToken = function useAdminToken() {\r",
+									"        console.log('Using admin token');\r",
+									"        useToken(authNames.admin);\r",
+									"    };\r",
+									"    utils.useMerchantToken = function useMerchantToken() {\r",
+									"        console.log('Using merchant token');\r",
+									"        useToken(authNames.merchant);\r",
+									"\r",
+									"        const data = JSON.parse(pm.collectionVariables.get(authNames.merchant));\r",
+									"        pm.collectionVariables.set(\"merchant_user\", data.email);\r",
+									"    };\r",
+									"    utils.useWebShopToken = function useWebShopToken() {\r",
+									"        console.log('Using webshop token');\r",
+									"        useToken(authNames.merchant);\r",
+									"\r",
+									"        const data = JSON.parse(pm.collectionVariables.get(authNames.merchant));\r",
+									"        pm.collectionVariables.set(\"token\", data.apiKey);\r",
+									"        pm.collectionVariables.set(\"merchant_user\", data.email);\r",
+									"    };\r",
+									"    utils.useDebtorToken = function useDebtorToken() {\r",
+									"        console.log('Using debtor token');\r",
+									"        useToken(authNames.debtor);\r",
+									"\r",
+									"        const data = JSON.parse(pm.collectionVariables.get(authNames.debtor));\r",
+									"        pm.collectionVariables.set(\"debtor_user\", data.email);\r",
+									"    };\r",
+									"    utils.saveAdminToken = function setAdminToken(data) {\r",
+									"        console.log('Saved admin token');\r",
+									"        saveToken(authNames.admin, data);\r",
+									"        this.useAdminToken();\r",
+									"    };\r",
+									"    utils.saveMerchantToken = function setMerchantToken(data) {\r",
+									"        console.log('Saved merchant token');\r",
+									"        saveToken(authNames.merchant, data);\r",
+									"        this.useMerchantToken();\r",
+									"    };\r",
+									"    utils.saveDebtorToken = function setDebtorToken(data) {\r",
+									"        console.log('Saved debtor token');\r",
+									"        saveToken(authNames.debtor, data);\r",
+									"        this.useDebtorToken();\r",
+									"    };\r",
+									"\r",
+									"    utils.verifyCollectionVariable = function verifyCollectionVariable(name) {\r",
+									"        const value = pm.collectionVariables.get(name);\r",
+									"        if (!value) {\r",
+									"            throw new Error('No value for ' + name + ' variable.');\r",
+									"        }\r",
+									"    };\r",
+									"    return utils;\r",
+									"} + '; loadUtils();');\r",
+									"tests['Utils initialized'] = true;"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{dummy_url}}",
+							"host": [
+								"{{dummy_url}}"
+							]
+						},
+						"description": "Initializing utility functions"
+					},
+					"response": []
+				}
+			],
+			"description": "Initialize stuff"
+		},
+		{
+			"name": "Login",
+			"item": [
+				{
+					"name": "Login as superadmin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"\r",
+									"    const utils = eval(globals.loadUtils);\r",
+									"    utils.saveAdminToken(pm.response.json());\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Logging in as superadmin...');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{admin_username}}\",\r\n    \"userType\": \"admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/testing/login",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"testing",
+								"login"
+							]
+						},
+						"description": "Login to superadmin account"
+					},
+					"response": []
+				},
+				{
+					"name": "Login as merchant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"\r",
+									"    const utils = eval(globals.loadUtils);\r",
+									"    utils.saveMerchantToken(pm.response.json());\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Logging in as merchant...');\r",
+									"\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.verifyCollectionVariable('merchant_user');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{merchant_user}}\",\r\n    \"userType\": \"merchant\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/testing/login",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"testing",
+								"login"
+							]
+						},
+						"description": "Login to merchant account with \"merchant_user\" variable"
+					},
+					"response": []
+				},
+				{
+					"name": "Login as debtor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"\r",
+									"    const utils = eval(globals.loadUtils);\r",
+									"    utils.saveDebtorToken(pm.response.json());\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Logging in as debtor...');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.verifyCollectionVariable('debtor_user');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{debtor_user}}\",\r\n    \"userType\": \"debtor\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/testing/login",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"testing",
+								"login"
+							]
+						},
+						"description": "Login to debtor account with \"debtor_user\" variable"
+					},
+					"response": []
+				}
+			],
+			"description": "Authorization stuff"
+		},
+		{
+			"name": "Debtor",
+			"item": [
+				{
+					"name": "Create debtor",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Creating debtor...');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useAdminToken();\r",
+									"\r",
+									"const cprNumber = '0102' + _.random(40, 99) + _.random(1000, 9999);\r",
+									"pm.variables.set('$randomCprNumber', cprNumber);\r",
+									"\r",
+									"const phoneNumber = '+45' + _.random(1000, 9999) + '****';\r",
+									"pm.variables.set('$randomTestPhoneNumber', phoneNumber);\r",
+									"\r",
+									"const postCode = _.random(1000, 9999).toString();\r",
+									"pm.variables.set('$randomPostCode', postCode);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"\r",
+									"    const utils = eval(globals.loadUtils);\r",
+									"    utils.saveDebtorToken(pm.response.json());\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  // use CPR number from NemID/MitID will allow you to login to Anyday\r\n  // create NemID url: https://appletk.danid.dk/testtools/index.jsp\r\n  // create MitID url: https://pp.mitid.dk/test-tool/frontend/\r\n\r\n  // default: {{$randomUUID}}\r\n  \"id\": \"{{$randomUUID}}\",\r\n\r\n  // default: {{$randomCprNumber}}\r\n  \"cprNumber\": \"{{$randomCprNumber}}\",\r\n  \r\n  // see Variables, or use a value from table CardSubscriptions.CardId\r\n  // default: {{card_approved}}\r\n  \"quickPayCardId\": \"{{card_approved}}\",\r\n\r\n  // email address\r\n  // default: {{$randomUserName}}@debtor.manaotest.com\r\n  \"email\": \"{{$randomUserName}}@debtor.manaotest.com\",\r\n\r\n  // language (en, da)\r\n  // default: en\r\n  \"language\": \"en\",\r\n\r\n  // default: {{$randomTestPhoneNumber}}\r\n  \"phoneNumber\": \"{{$randomTestPhoneNumber}}\",\r\n\r\n  // default: {{$randomFirstName}}\r\n  \"firstName\": \"{{$randomFirstName}}\",\r\n\r\n  // default: {{$randomLastName}}\r\n  \"lastName\": \"{{$randomLastName}}\",\r\n\r\n  // default: {{$randomStreetAddress}}\r\n  \"streetAddress\": \"{{$randomStreetAddress}}\",\r\n\r\n  // default: {{$randomCity}}\r\n  \"city\": \"{{$randomCity}}\",\r\n\r\n  // default: {{$randomPostCode}}\r\n  \"postCode\": \"{{$randomPostCode}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/testing/create-test-case-debtor",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"testing",
+								"create-test-case-debtor"
+							]
+						},
+						"description": "Create debtor scenario, this will create a new user."
+					},
+					"response": []
+				},
+				{
+					"name": "Confirm debtor email",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Confirm debtor email');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useAdminToken();\r",
+									"\r",
+									"let debtorEmail = pm.collectionVariables.get('debtor_user');\r",
+									"debtorEmail = encodeURIComponent(debtorEmail);\r",
+									"pm.variables.set('debtor_email', debtorEmail);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/testing/confirm-debtor-email?email={{debtor_email}}",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"testing",
+								"confirm-debtor-email"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{debtor_email}}",
+									"description": "Encoded debtor's email"
+								}
+							]
+						},
+						"description": "Confirm debtor's email which is defined in \"debtor_user\" variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Change debtor card (Approved)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Confirm debtor email');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useAdminToken();\r",
+									"\r",
+									"const last4Digits = _.random(1000, 9999);\r",
+									"pm.variables.set('last4digits', last4Digits);\r",
+									"\r",
+									"let debtorEmail = pm.collectionVariables.get('debtor_user');\r",
+									"debtorEmail = encodeURIComponent(debtorEmail);\r",
+									"pm.variables.set('debtor_email', debtorEmail);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/testing/change-debtor-card?email={{debtor_email}}&quickPayCardId={{card_approved}}&last4Digit={{last4digits}}",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"testing",
+								"change-debtor-card"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{debtor_email}}",
+									"description": "Encoded debtor's email"
+								},
+								{
+									"key": "quickPayCardId",
+									"value": "{{card_approved}}",
+									"description": "Approved card"
+								},
+								{
+									"key": "last4Digit",
+									"value": "{{last4digits}}",
+									"description": "Last 4 digits"
+								}
+							]
+						},
+						"description": "Confirm debtor's email which is defined in \"debtor_user\" variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Change debtor card (Capture Rejected)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Confirm debtor email');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useAdminToken();\r",
+									"\r",
+									"const last4Digits = _.random(1000, 9999);\r",
+									"pm.variables.set('last4digits', last4Digits);\r",
+									"\r",
+									"let debtorEmail = pm.collectionVariables.get('debtor_user');\r",
+									"debtorEmail = encodeURIComponent(debtorEmail);\r",
+									"pm.variables.set('debtor_email', debtorEmail);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/testing/change-debtor-card?email={{debtor_email}}&quickPayCardId={{card_capture_rejected}}&last4Digit={{last4digits}}",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"testing",
+								"change-debtor-card"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{debtor_email}}",
+									"description": "Encoded debtor's email"
+								},
+								{
+									"key": "quickPayCardId",
+									"value": "{{card_capture_rejected}}",
+									"description": "Capture rejected card"
+								},
+								{
+									"key": "last4Digit",
+									"value": "{{last4digits}}",
+									"description": "Last 4 digits"
+								}
+							]
+						},
+						"description": "Confirm debtor's email which is defined in \"debtor_user\" variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Change debtor card (Refund Rejected)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Confirm debtor email');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useAdminToken();\r",
+									"\r",
+									"const last4Digits = _.random(1000, 9999);\r",
+									"pm.variables.set('last4digits', last4Digits);\r",
+									"\r",
+									"let debtorEmail = pm.collectionVariables.get('debtor_user');\r",
+									"debtorEmail = encodeURIComponent(debtorEmail);\r",
+									"pm.variables.set('debtor_email', debtorEmail);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/testing/change-debtor-card?email={{debtor_email}}&quickPayCardId={{card_refund_rejected}}&last4Digit={{last4digits}}",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"testing",
+								"change-debtor-card"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{debtor_email}}",
+									"description": "Encoded debtor's email"
+								},
+								{
+									"key": "quickPayCardId",
+									"value": "{{card_refund_rejected}}",
+									"description": "Refund rejected card"
+								},
+								{
+									"key": "last4Digit",
+									"value": "{{last4digits}}",
+									"description": "Last 4 digits"
+								}
+							]
+						},
+						"description": "Confirm debtor's email which is defined in \"debtor_user\" variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Change debtor card (Cancel Rejected)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Confirm debtor email');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useAdminToken();\r",
+									"\r",
+									"const last4Digits = _.random(1000, 9999);\r",
+									"pm.variables.set('last4digits', last4Digits);\r",
+									"\r",
+									"let debtorEmail = pm.collectionVariables.get('debtor_user');\r",
+									"debtorEmail = encodeURIComponent(debtorEmail);\r",
+									"pm.variables.set('debtor_email', debtorEmail);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/testing/change-debtor-card?email={{debtor_email}}&quickPayCardId={{card_cancel_rejected}}&last4Digit={{last4digits}}",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"testing",
+								"change-debtor-card"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{debtor_email}}",
+									"description": "Encoded debtor's email"
+								},
+								{
+									"key": "quickPayCardId",
+									"value": "{{card_cancel_rejected}}",
+									"description": "Cancel rejected card"
+								},
+								{
+									"key": "last4Digit",
+									"value": "{{last4digits}}",
+									"description": "Last 4 digits"
+								}
+							]
+						},
+						"description": "Confirm debtor's email which is defined in \"debtor_user\" variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Change debtor card (Recurring Rejected)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Confirm debtor email');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useAdminToken();\r",
+									"\r",
+									"const last4Digits = _.random(1000, 9999);\r",
+									"pm.variables.set('last4digits', last4Digits);\r",
+									"\r",
+									"let debtorEmail = pm.collectionVariables.get('debtor_user');\r",
+									"debtorEmail = encodeURIComponent(debtorEmail);\r",
+									"pm.variables.set('debtor_email', debtorEmail);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/testing/change-debtor-card?email={{debtor_email}}&quickPayCardId={{card_recurring_rejected}}&last4Digit={{last4digits}}",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"testing",
+								"change-debtor-card"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{debtor_email}}",
+									"description": "Encoded debtor's email"
+								},
+								{
+									"key": "quickPayCardId",
+									"value": "{{card_recurring_rejected}}",
+									"description": "Recurring rejected card"
+								},
+								{
+									"key": "last4Digit",
+									"value": "{{last4digits}}",
+									"description": "Last 4 digits"
+								}
+							]
+						},
+						"description": "Confirm debtor's email which is defined in \"debtor_user\" variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Change debtor card (3D Secure is required)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Confirm debtor email');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useAdminToken();\r",
+									"\r",
+									"const last4Digits = _.random(1000, 9999);\r",
+									"pm.variables.set('last4digits', last4Digits);\r",
+									"\r",
+									"let debtorEmail = pm.collectionVariables.get('debtor_user');\r",
+									"debtorEmail = encodeURIComponent(debtorEmail);\r",
+									"pm.variables.set('debtor_email', debtorEmail);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/testing/change-debtor-card?email={{debtor_email}}&quickPayCardId={{card_3d_secure_required}}&last4Digit={{last4digits}}",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"testing",
+								"change-debtor-card"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{debtor_email}}",
+									"description": "Encoded debtor's email"
+								},
+								{
+									"key": "quickPayCardId",
+									"value": "{{card_3d_secure_required}}",
+									"description": "3D Secure is required card"
+								},
+								{
+									"key": "last4Digit",
+									"value": "{{last4digits}}",
+									"description": "Last 4 digits"
+								}
+							]
+						},
+						"description": "Confirm debtor's email which is defined in \"debtor_user\" variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Change debtor card (Authorize Once)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Confirm debtor email');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useAdminToken();\r",
+									"\r",
+									"const last4Digits = _.random(1000, 9999);\r",
+									"pm.variables.set('last4digits', last4Digits);\r",
+									"\r",
+									"let debtorEmail = pm.collectionVariables.get('debtor_user');\r",
+									"debtorEmail = encodeURIComponent(debtorEmail);\r",
+									"pm.variables.set('debtor_email', debtorEmail);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/testing/change-debtor-card?email={{debtor_email}}&quickPayCardId={{card_authorize_once}}&last4Digit={{last4digits}}",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"testing",
+								"change-debtor-card"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{debtor_email}}",
+									"description": "Encoded debtor's email"
+								},
+								{
+									"key": "quickPayCardId",
+									"value": "{{card_authorize_once}}",
+									"description": "Authorize once card"
+								},
+								{
+									"key": "last4Digit",
+									"value": "{{last4digits}}",
+									"description": "Last 4 digits"
+								}
+							]
+						},
+						"description": "Confirm debtor's email which is defined in \"debtor_user\" variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Change debtor card (Delay 60s)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Confirm debtor email');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useAdminToken();\r",
+									"\r",
+									"const last4Digits = _.random(1000, 9999);\r",
+									"pm.variables.set('last4digits', last4Digits);\r",
+									"\r",
+									"let debtorEmail = pm.collectionVariables.get('debtor_user');\r",
+									"debtorEmail = encodeURIComponent(debtorEmail);\r",
+									"pm.variables.set('debtor_email', debtorEmail);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/testing/change-debtor-card?email={{debtor_email}}&quickPayCardId={{card_delayed_60s}}&last4Digit={{last4digits}}",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"testing",
+								"change-debtor-card"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{debtor_email}}",
+									"description": "Encoded debtor's email"
+								},
+								{
+									"key": "quickPayCardId",
+									"value": "{{card_delayed_60s}}",
+									"description": "Delayed in queue 60 seconds card"
+								},
+								{
+									"key": "last4Digit",
+									"value": "{{last4digits}}",
+									"description": "Last 4 digits"
+								}
+							]
+						},
+						"description": "Confirm debtor's email which is defined in \"debtor_user\" variable."
+					},
+					"response": []
+				}
+			],
+			"description": "Debtor stuff"
+		},
+		{
+			"name": "Merchant",
+			"item": [
+				{
+					"name": "Create merchant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"\r",
+									"    const utils = eval(globals.loadUtils);\r",
+									"    utils.saveMerchantToken(pm.response.json());\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Creating merchant...');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useAdminToken();"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  // default: {{$randomFirstName}}\r\n  \"merchantName\": \"{{$randomFirstName}}\",\r\n  \r\n  // default: {{$randomLastName}}\r\n  \"webshopName\": \"{{$randomLastName}}\",\r\n  \r\n  // default: {{$randomUrl}}\r\n  \"webshopUrl\": \"{{$randomUrl}}\",\r\n\r\n  // document approval \r\n  // default: true\r\n  \"approveMerchantAML\": true,\r\n  \r\n  // default: {{$randomUserName}}@merchant.manaotest.com\r\n  \"email\": \"{{$randomUserName}}@merchant.manaotest.com\",\r\n  \r\n  // default: 0\r\n  \"transactionFee\": 0,\r\n  \r\n  // default: 0\r\n  \"transactionVat\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/testing/create-test-case-merchant",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"testing",
+								"create-test-case-merchant"
+							]
+						},
+						"description": "Create merchant scenario, this will create a new merchant."
+					},
+					"response": []
+				}
+			],
+			"description": "Merchant stuff"
+		},
+		{
+			"name": "Payment",
+			"item": [
+				{
+					"name": "Checkout order",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Purchasing order...');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useWebShopToken();\r",
+									"\r",
+									"const orderId = _.random(1000000000, 9999999999);\r",
+									"pm.variables.set('order_id', orderId);\r",
+									"console.log('Order ID: ' + orderId);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"\r",
+									"    pm.collectionVariables.set('transaction_id', pm.response.json().purchaseOrderId);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  // default: 300\r\n  \"Amount\": 300,\r\n\r\n  // default: DKK\r\n  \"Currency\": \"DKK\",\r\n\r\n  // a random Id with 10 digits, see Pre-req.\r\n  // default: {{order_id}}\r\n  \"OrderId\": \"{{order_id}}\",\r\n\r\n  // default: {{base_url}}{{internal_path}}/testing/external-orders/callback\r\n  \"CallbackUrl\": \"{{base_url}}{{internal_path}}/testing/external-orders/callback\",\r\n\r\n  // default: {{base_url}}{{internal_path}}/testing/external-orders/{{order_id}}/success\r\n  \"SuccessRedirectUrl\": \"{{base_url}}{{internal_path}}/testing/external-orders/{{order_id}}/success\",\r\n\r\n  // {{base_url}}{{internal_path}}/testing/external-orders/{{order_id}}/cancel\r\n  \"CancelRedirectUrl\": \"{{base_url}}{{internal_path}}/testing/external-orders/{{order_id}}/cancel\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}{{public_payments_path}}",
+							"host": [
+								"{{base_url}}{{public_payments_path}}"
+							]
+						},
+						"description": "Checkout the order by using webshop token.\nThis will set a transaction Id to \"transaction_id\" variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Authorize payment",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Authorizing payment...');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useDebtorToken();\r",
+									"\r",
+									"utils.verifyCollectionVariable('transaction_id');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be Pending\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  // transaction Id which will get after complete the \"Checkout order\" request\r\n  // default: {{transaction_id}}\r\n  \"checkoutId\": \"{{transaction_id}}\",\r\n\r\n  // default: true\r\n  \"acceptPurchaseOrderTermsAndConditions\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/checkout/authorize-payment",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"checkout",
+								"authorize-payment"
+							]
+						},
+						"description": "Authorize the payment from \"transaction_id\" variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Authorize payment status",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Authorizing payment...');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useDebtorToken();\r",
+									"\r",
+									"utils.verifyCollectionVariable('transaction_id');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be Pending\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"    pm.expect(\"\").to.not.eq(pm.response.json().data);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/checkout/authorize-payment/{{transaction_id}}/status",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"checkout",
+								"authorize-payment",
+								"{{transaction_id}}",
+								"status"
+							]
+						},
+						"description": "Authorize the payment from \"transaction_id\" variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Authorize payment",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Authorizing payment...');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useAdminToken();"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}{{internal_path}}/testing/pending-payment/{{transaction_id}}",
+							"host": [
+								"{{base_url}}{{internal_path}}"
+							],
+							"path": [
+								"testing",
+								"pending-payment",
+								"{{transaction_id}}"
+							]
+						},
+						"description": "Authorize the payment from \"transaction_id\" variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Capture payment",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Capturing order...');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useWebShopToken();\r",
+									"\r",
+									"utils.verifyCollectionVariable('transaction_id');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  // default: 300\r\n  \"Amount\": 300\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}{{public_payments_path}}/{{transaction_id}}/capture",
+							"host": [
+								"{{base_url}}{{public_payments_path}}"
+							],
+							"path": [
+								"{{transaction_id}}",
+								"capture"
+							]
+						},
+						"description": "Capture the payment from \"transaction_id\" variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Refund payment",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Capturing order...');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useWebShopToken();\r",
+									"\r",
+									"utils.verifyCollectionVariable('transaction_id');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  // default: 300\r\n  \"Amount\": 300\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}{{public_payments_path}}/{{transaction_id}}/refund",
+							"host": [
+								"{{base_url}}{{public_payments_path}}"
+							],
+							"path": [
+								"{{transaction_id}}",
+								"refund"
+							]
+						},
+						"description": "Refund the payment from \"transaction_id\" variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel payment",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log('Capturing order...');\r",
+									"const utils = eval(globals.loadUtils);\r",
+									"utils.useWebShopToken();\r",
+									"\r",
+									"utils.verifyCollectionVariable('transaction_id');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should be success\", function() {\r",
+									"    pm.response.to.be.success;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{public_payments_path}}/{{transaction_id}}/cancel",
+							"host": [
+								"{{base_url}}{{public_payments_path}}"
+							],
+							"path": [
+								"{{transaction_id}}",
+								"cancel"
+							]
+						},
+						"description": "Cancel the payment from \"transaction_id\" variable."
+					},
+					"response": []
+				}
+			],
+			"description": "Payment stuff"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "current_user",
+			"value": "superadmin@manaotest.com"
+		},
+		{
+			"key": "current_auth",
+			"value": "admin_auth"
+		},
+		{
+			"key": "token",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNDQ5NGY3Mi1jMmRiLTQ2MDItYjkyNS1kZTI2MmVhN2EyZDkiLCJhLmVtYWlsIjoic3VwZXJhZG1pbkBtYW5hb3Rlc3QuY29tIiwiYS50eXBlIjoiYWRtaW4iLCJqdGkiOiI4Y2Y2NDUyYy0xZjE2LTRmZjEtYWQ2OC0xMGNiYjdkZWEzZjYiLCJpYXQiOjE2MTUxODc3MDUsIm5iZiI6MTYxNTE4NzcwNSwiZXhwIjoxNjE1MTg5NTA1LCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo1Njc0Ny8iLCJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo1Njc0Ny8ifQ.H-3FG63ZBWQo85W-ed2FjFkIOMDHdIn5IWzcm3jH9lY"
+		},
+		{
+			"key": "refresh_token",
+			"value": "tQ0rQX0Su8yaAv4tzeBKBrxVxeXfVM5PhXzfe2WSxhg="
+		},
+		{
+			"key": "admin_auth",
+			"value": "{\"id\":\"e4494f72-c2db-4602-b925-de262ea7a2d9\",\"email\":\"superadmin@manaotest.com\",\"auth\":{\"token_type\":\"Bearer\",\"access_token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNDQ5NGY3Mi1jMmRiLTQ2MDItYjkyNS1kZTI2MmVhN2EyZDkiLCJhLmVtYWlsIjoic3VwZXJhZG1pbkBtYW5hb3Rlc3QuY29tIiwiYS50eXBlIjoiYWRtaW4iLCJqdGkiOiI4Y2Y2NDUyYy0xZjE2LTRmZjEtYWQ2OC0xMGNiYjdkZWEzZjYiLCJpYXQiOjE2MTUxODc3MDUsIm5iZiI6MTYxNTE4NzcwNSwiZXhwIjoxNjE1MTg5NTA1LCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo1Njc0Ny8iLCJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo1Njc0Ny8ifQ.H-3FG63ZBWQo85W-ed2FjFkIOMDHdIn5IWzcm3jH9lY\",\"expires_in\":1799,\"refresh_token\":\"tQ0rQX0Su8yaAv4tzeBKBrxVxeXfVM5PhXzfe2WSxhg=\"},\"webShopId\":null,\"apiKey\":null,\"auth_name\":\"admin_auth\"}"
+		},
+		{
+			"key": "debtor_auth",
+			"value": "{\"id\":\"1e563076-c34b-477d-a472-64631e03840a\",\"email\":\"kelton.mraz49@debtor.manaotest.com\",\"auth\":{\"token_type\":\"Bearer\",\"access_token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMjZiNjExZi1lZDNjLTRhM2EtYjExMy03NzAxYWQ4NGM5YjYiLCJhLmVtYWlsIjoia2VsdG9uLm1yYXo0OUBkZWJ0b3IubWFuYW90ZXN0LmNvbSIsImEudHlwZSI6ImRlYnRvciIsImp0aSI6IjlkZDgyZTQxLTJhYTctNDg1Mi1hZGQ3LWIwNzhlNTljYjZjMiIsImEuZGVidG9yIjoiMWU1NjMwNzYtYzM0Yi00NzdkLWE0NzItNjQ2MzFlMDM4NDBhIiwiaWF0IjoxNjE1MTg3NTg3LCJuYmYiOjE2MTUxODc1ODYsImV4cCI6MTYxNTE4OTM4NiwiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NTY3NDcvIiwiYXVkIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NTY3NDcvIn0.zQpfUORKhmEBR9LHmQVFl5J3-yJfD_RwdQjWKM8yRsY\",\"expires_in\":1799,\"refresh_token\":\"TxtZncDAOnsRuYXJ5fLsVovsWA1zu2mJsQlmvXZjp3E=\"},\"webShopId\":null,\"apiKey\":null,\"auth_name\":\"debtor_auth\"}"
+		},
+		{
+			"key": "merchant_auth",
+			"value": "{\"id\":\"f7c661ed-d67b-4d12-9e36-ec9c07c83316\",\"email\":\"aaron47@merchant.manaotest.com\",\"auth\":{\"token_type\":\"Bearer\",\"access_token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5NjM0NzE4Ny1hOGQyLTQyMjAtOGEwZi1iYWM2OTdjODA0ZmMiLCJhLmVtYWlsIjoiYWFyb240N0BtZXJjaGFudC5tYW5hb3Rlc3QuY29tIiwiYS50eXBlIjoibWVyY2hhbnQiLCJqdGkiOiI2ZTZhMzRkNi0zYTY1LTQyODctYTBiOC1kMGQwMDkxY2E5NjQiLCJhLm1lcmNoYW50IjoiZjdjNjYxZWQtZDY3Yi00ZDEyLTllMzYtZWM5YzA3YzgzMzE2IiwiaWF0IjoxNjE1MTg2NDI2LCJuYmYiOjE2MTUxODY0MjYsImV4cCI6MTYxNTE4ODIyNiwiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NTY3NDcvIiwiYXVkIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NTY3NDcvIn0.tueOMom4LWIPEHrtbIE9OC39kRxzL3Vii7Zpw6bSGhY\",\"expires_in\":1799,\"refresh_token\":\"mcTNpoHI/jv4p5n/0W/ezYSzprsCjVQN45qGOlIYXug=\"},\"webShopId\":\"eb8f0f1a-da9c-444e-b8f4-7eee2a7a3f0c\",\"apiKey\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhLm1lcmNoYW50IjoiZjdjNjYxZWQtZDY3Yi00ZDEyLTllMzYtZWM5YzA3YzgzMzE2IiwiYS53ZWJzaG9wIjoiZWI4ZjBmMWEtZGE5Yy00NDRlLWI4ZjQtN2VlZTJhN2EzZjBjIiwiYS5hcGlrZXkiOiJQcm9kdWN0aW9uIiwic3ViIjoiOTYzNDcxODctYThkMi00MjIwLThhMGYtYmFjNjk3YzgwNGZjIiwianRpIjoiNjg0NGY2ODctMTQ4YS00MDkwLWJhMWItNjQwYTVlNjg4ODQwIiwiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NTY3NDcvIiwiYXVkIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NTY3NDcvIn0.XE82aNwTHIqMyLfmPXv66tQJKc_JbrcFvme-LsHOn_w\",\"auth_name\":\"merchant_auth\"}"
+		},
+		{
+			"key": "merchant_user",
+			"value": "merchant1@manaotest.com"
+		},
+		{
+			"key": "debtor_user",
+			"value": "debtor1@manaotest.com"
+		},
+		{
+			"key": "transaction_id",
+			"value": "96370516-4863-4359-b50b-16da85a07b8c"
+		},
+		{
+			"key": "card_approved",
+			"value": "270387731"
+		},
+		{
+			"key": "card_capture_rejected",
+			"value": "237940496"
+		},
+		{
+			"key": "card_refund_rejected",
+			"value": "237940734"
+		},
+		{
+			"key": "card_cancel_rejected",
+			"value": "237940762"
+		},
+		{
+			"key": "card_recurring_rejected",
+			"value": "237940873"
+		},
+		{
+			"key": "card_3d_secure_required",
+			"value": "237940883"
+		},
+		{
+			"key": "card_authorize_once",
+			"value": "237940958"
+		},
+		{
+			"key": "card_delayed_60s",
+			"value": "237940976"
+		}
+	]
+}

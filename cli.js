@@ -1,0 +1,109 @@
+#!/usr/bin/env node
+
+/**
+ * CLI tool for managing Anyday API test environments
+ * Usage: node cli.js [command] [options]
+ */
+
+const {
+  environments,
+  globals,
+  testScenarios,
+  listEnvironments,
+  listCardTypes,
+  listTestScenarios,
+} = require("./environments");
+
+const commands = {
+  "list-envs": {
+    description: "List all available environments",
+    action: listEnvironments,
+  },
+  "list-cards": {
+    description: "List all available card types for testing",
+    action: listCardTypes,
+  },
+  "list-scenarios": {
+    description: "List all predefined test scenarios",
+    action: listTestScenarios,
+  },
+  test: {
+    description: "Run tests with specific environment",
+    action: runTests,
+  },
+  setup: {
+    description: "Run setup tests to create initial data",
+    action: runSetup,
+  },
+  help: {
+    description: "Show this help message",
+    action: showHelp,
+  },
+};
+
+function runTests() {
+  const env = process.argv[3] || "qa5";
+  console.log(`\n🚀 Running tests against ${env} environment...\n`);
+
+  process.env.TEST_ENV = env;
+  const { spawn } = require("child_process");
+
+  const testProcess = spawn("npm", ["test"], {
+    stdio: "inherit",
+    env: { ...process.env, TEST_ENV: env },
+  });
+
+  testProcess.on("close", (code) => {
+    console.log(`\nTests completed with code ${code}`);
+  });
+}
+
+function runSetup() {
+  const env = process.argv[3] || "qa5";
+  console.log(`\n🔧 Running setup against ${env} environment...\n`);
+
+  process.env.TEST_ENV = env;
+  const { spawn } = require("child_process");
+
+  const setupProcess = spawn("npm", ["run", "setup"], {
+    stdio: "inherit",
+    env: { ...process.env, TEST_ENV: env },
+  });
+
+  setupProcess.on("close", (code) => {
+    console.log(`\nSetup completed with code ${code}`);
+  });
+}
+
+function showHelp() {
+  console.log("\n=== Anyday API Test CLI ===\n");
+  console.log("Available commands:");
+
+  Object.entries(commands).forEach(([cmd, info]) => {
+    console.log(`  ${cmd.padEnd(15)} - ${info.description}`);
+  });
+
+  console.log("\nExamples:");
+  console.log("  node cli.js list-envs              # List environments");
+  console.log("  node cli.js test qa5               # Run tests on QA5");
+  console.log("  node cli.js setup dev              # Run setup on Dev");
+  console.log("  node cli.js list-cards             # List card types");
+  console.log("\nEnvironment Variables:");
+  console.log("  TEST_ENV       - Environment to test against (default: qa5)");
+  console.log("  ADMIN_USERNAME - Admin username override");
+  console.log("");
+}
+
+// Main execution
+const command = process.argv[2];
+
+if (!command || command === "help") {
+  showHelp();
+} else if (commands[command]) {
+  commands[command].action();
+} else {
+  console.log(`\n❌ Unknown command: ${command}`);
+  console.log('Run "node cli.js help" for available commands\n');
+}
+
+module.exports = commands;

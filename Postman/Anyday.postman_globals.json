@@ -1,0 +1,39 @@
+{
+	"id": "7271bebe-af6e-42e7-824f-186167f99cfb",
+	"values": [
+		{
+			"key": "admin_username",
+			"value": "superadmin@manaotest.com",
+			"enabled": true
+		},
+		{
+			"key": "internal_path",
+			"value": "/api/{{version}}/internal",
+			"enabled": true
+		},
+		{
+			"key": "public_path",
+			"value": "/api/{{version}}",
+			"enabled": true
+		},
+		{
+			"key": "public_payments_path",
+			"value": "/api/{{version}}/orders",
+			"enabled": true
+		},
+		{
+			"key": "dummy_url",
+			"value": "{{base_url}}{{internal_path}}/version",
+			"enabled": true
+		},
+		{
+			"key": "loadUtils",
+			"value": "function loadUtils() {\r\n    const authNames = {\r\n        admin: 'admin_auth',\r\n        merchant: 'merchant_auth',\r\n        debtor: 'debtor_auth'\r\n    };\r\n    let utils = {};\r\n    let useToken = function (name) {\r\n        try {\r\n            const data = JSON.parse(pm.collectionVariables.get(name));\r\n            pm.collectionVariables.set(\"token\", data.auth.access_token);\r\n            pm.collectionVariables.set(\"refresh_token\", data.auth.refresh_token);\r\n            pm.collectionVariables.set(\"current_user\", data.email);\r\n            pm.collectionVariables.set(\"current_auth\", data.auth_name);\r\n        }\r\n        catch {\r\n            throw new Error(name + ' is invalid.');\r\n        }\r\n    };\r\n    let saveToken = function (name, data) {\r\n        data.auth_name = name;\r\n        pm.collectionVariables.set(name, JSON.stringify(data));\r\n    };\r\n\r\n    utils.useAdminToken = function useAdminToken() {\r\n        console.log('Using admin token');\r\n        useToken(authNames.admin);\r\n    };\r\n    utils.useMerchantToken = function useMerchantToken() {\r\n        console.log('Using merchant token');\r\n        useToken(authNames.merchant);\r\n\r\n        const data = JSON.parse(pm.collectionVariables.get(authNames.merchant));\r\n        pm.collectionVariables.set(\"merchant_user\", data.email);\r\n    };\r\n    utils.useWebShopToken = function useWebShopToken() {\r\n        console.log('Using webshop token');\r\n        useToken(authNames.merchant);\r\n\r\n        const data = JSON.parse(pm.collectionVariables.get(authNames.merchant));\r\n        pm.collectionVariables.set(\"token\", data.apiKey);\r\n        pm.collectionVariables.set(\"merchant_user\", data.email);\r\n    };\r\n    utils.useDebtorToken = function useDebtorToken() {\r\n        console.log('Using debtor token');\r\n        useToken(authNames.debtor);\r\n\r\n        const data = JSON.parse(pm.collectionVariables.get(authNames.debtor));\r\n        pm.collectionVariables.set(\"debtor_user\", data.email);\r\n    };\r\n    utils.saveAdminToken = function setAdminToken(data) {\r\n        console.log('Saved admin token');\r\n        saveToken(authNames.admin, data);\r\n        this.useAdminToken();\r\n    };\r\n    utils.saveMerchantToken = function setMerchantToken(data) {\r\n        console.log('Saved merchant token');\r\n        saveToken(authNames.merchant, data);\r\n        this.useMerchantToken();\r\n    };\r\n    utils.saveDebtorToken = function setDebtorToken(data) {\r\n        console.log('Saved debtor token');\r\n        saveToken(authNames.debtor, data);\r\n        this.useDebtorToken();\r\n    };\r\n\r\n    utils.verifyCollectionVariable = function verifyCollectionVariable(name) {\r\n        const value = pm.collectionVariables.get(name);\r\n        if (!value) {\r\n            throw new Error('No value for ' + name + ' variable.');\r\n        }\r\n    };\r\n    return utils;\r\n}; loadUtils();",
+			"enabled": true
+		}
+	],
+	"name": "Globals",
+	"_postman_variable_scope": "globals",
+	"_postman_exported_at": "2022-06-23T08:05:27.516Z",
+	"_postman_exported_using": "Postman/9.21.2"
+}

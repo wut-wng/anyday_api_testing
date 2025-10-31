@@ -4,14 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha *.test.js"
+    "test": "mocha *.test.js",
+    "setup": "mocha setup.test.js",
+    "setup:simple": "mocha setup-simple.test.js",
+    "test:setup": "mocha setup.test.js",
+    "test:all": "npm run setup && mocha *.test.js --grep 'Initial Setup' --invert",
+    "test:example": "mocha example-refactored.test.js",
+    "test:payments": "mocha *payment*.test.js",
+    "test:merchants": "mocha *merchant*.test.js",
+    "test:debtors": "mocha *debtor*.test.js"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "chai": "^4.3.4",
-    "mocha": "^9.1.2",
-    "supertest": "^6.1.6"
+  "devDependencies": {
+    "chai": "^4.3.7",
+    "mocha": "^11.7.4",
+    "supertest": "^7.1.4"
   }
 }
