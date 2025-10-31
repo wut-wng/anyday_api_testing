@@ -106,7 +106,7 @@ describe("Initial Setup - Basic Data Creation", function () {
       const debtorData = {
         id: `test-debtor-${timestamp}`,
         cprNumber: cprNumber,
-        quickPayCardId: cardTypes.approved,
+        quickPayCardId: cardTypes.approved.id,
         email: `debtor_${timestamp}@debtor.manaotest.com`,
         language: "en",
         phoneNumber: phoneNumber,
@@ -231,8 +231,10 @@ describe("Initial Setup - Basic Data Creation", function () {
   describe("7. Card Types Reference", function () {
     it("should provide card types for testing scenarios", function () {
       console.log("\n=== AVAILABLE CARD TYPES ===");
-      Object.entries(cardTypesForDisplay).forEach(([name, id]) => {
-        console.log(`${name}: ${id}`);
+      Object.entries(cardTypesForDisplay).forEach(([name, cardInfo]) => {
+        const id = typeof cardInfo === 'object' ? cardInfo.id : cardInfo;
+        const description = typeof cardInfo === 'object' ? cardInfo.description : 'Card for testing';
+        console.log(`${name}: ${id} - ${description}`);
       });
       console.log("===========================\n");
 

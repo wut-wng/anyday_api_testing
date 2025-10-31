@@ -1,9 +1,10 @@
 const request = require("supertest");
 const expect = require("chai").expect;
-const { environments, globals, getEnvironment } = require("./environments");
+const { environments, globals, cardTypes, getEnvironment, getPortalUrl, getAllPortals } = require("./environments");
 
-// Get current environment (default to qa5)
-const currentEnv = process.env.TEST_ENV || "qa5";
+// Get current environment (default to local)
+const currentEnv = process.env.TEST_ENV || "local";
+const currentPortal = process.env.TEST_PORTAL || "api";
 const env = getEnvironment(currentEnv);
 
 // Global variables (from Postman globals)
@@ -13,7 +14,26 @@ const apiGlobals = {
   publicPath: `/api/${env.version}`,
   publicPaymentsPath: `/api/${env.version}/orders`,
 
-  // Utility URLs
+  // Portal URLs
+  get apiUrl() {
+    return getPortalUrl(currentEnv, "api");
+  },
+  get adminUrl() {
+    return getPortalUrl(currentEnv, "admin");
+  },
+  get shopperUrl() {
+    return getPortalUrl(currentEnv, "shopper");
+  },
+  get merchantUrl() {
+    return getPortalUrl(currentEnv, "merchant");
+  },
+
+  // Current portal URL
+  get currentPortalUrl() {
+    return getPortalUrl(currentEnv, currentPortal);
+  },
+
+  // Utility URLs (backward compatibility)
   get dummyUrl() {
     return `${env.baseUrl}${this.internalPath}/version`;
   },
@@ -63,22 +83,37 @@ module.exports = {
   env,
   environments,
   currentEnv,
+  currentPortal,
 
   // Global variables
   globals: apiGlobals,
-  cardTypes: globals.cards,
+  cardTypes,
 
   // Authentication
   auth,
 
+  // Portal utilities
+  getPortalUrl: (portalType) => getPortalUrl(currentEnv, portalType),
+  getAllPortals: () => getAllPortals(currentEnv),
+  switchPortal: (portalType) => {
+    process.env.TEST_PORTAL = portalType;
+    return getPortalUrl(currentEnv, portalType);
+  },
+
   // Helper methods
   getFullUrl: (path) => `${env.baseUrl}${path}`,
+  getPortalFullUrl: (portalType, path) => `${getPortalUrl(currentEnv, portalType)}${path}`,
 
-  // API endpoints
+  // API endpoints (backward compatibility)
   endpoints: {
     internal: apiGlobals.internalApiUrl,
     public: apiGlobals.baseApiUrl,
     payments: apiGlobals.paymentsApiUrl,
     version: apiGlobals.dummyUrl,
+    // Portal endpoints
+    api: apiGlobals.apiUrl,
+    admin: apiGlobals.adminUrl,
+    shopper: apiGlobals.shopperUrl,
+    merchant: apiGlobals.merchantUrl,
   },
 };

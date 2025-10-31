@@ -29,7 +29,7 @@ npm install
 
 ### 2. Run Initial Setup
 ```bash
-# Setup test data on QA5 (default)
+# Setup test data on local (default)
 npm run setup
 
 # Or setup on specific environment
@@ -58,7 +58,7 @@ npm run test:debtors
 - `local` - Local development environment
 
 ### Environment Variables
-- `TEST_ENV` - Environment to test against (default: qa5)
+- `TEST_ENV` - Environment to test against (default: local)
 - `ADMIN_USERNAME` - Admin username override
 
 ### Switch Environments
@@ -101,7 +101,7 @@ node cli.js list-cards
 node cli.js list-scenarios
 
 # Run setup on specific environment
-node cli.js setup qa5
+node cli.js setup local
 
 # Run tests on specific environment
 node cli.js test dev

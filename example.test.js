@@ -6,7 +6,7 @@ describe("Anyday API Tests - Example Usage", function () {
     it("should use correct environment settings", function () {
       console.log(`Testing against: ${env.baseUrl}`);
       console.log(`API Version: ${env.version}`);
-      console.log(`Current Environment: ${process.env.TEST_ENV || "qa5"}`);
+      console.log(`Current Environment: ${process.env.TEST_ENV || "local"}`);
 
       expect(env.baseUrl).to.include("yadyna.xyz");
       expect(env.version).to.equal("v1");

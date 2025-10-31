@@ -83,12 +83,17 @@ class TestHelper {
     const last4 = last4Digits || Math.floor(Math.random() * 9000) + 1000;
     const debtorEmail = encodeURIComponent(this.setupManager.data.debtor.email);
 
+    // Handle both old string format and new object format
+    const cardId = typeof cardTypes[cardType] === 'object' 
+      ? cardTypes[cardType].id 
+      : cardTypes[cardType];
+
     return await request(env.baseUrl)
       .post(globals.internalPath + "/testing/change-debtor-card")
       .set("Authorization", auth.getAuthHeader("admin"))
       .query({
         email: debtorEmail,
-        quickPayCardId: cardTypes[cardType],
+        quickPayCardId: cardId,
         last4Digit: last4,
       })
       .expect(200);

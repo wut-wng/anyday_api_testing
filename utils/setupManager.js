@@ -86,10 +86,16 @@ class SetupManager {
     console.log(`Setting up debtor with ${cardType} card...`);
 
     const timestamp = Date.now();
+    
+    // Handle both old string format and new object format
+    const cardId = typeof cardTypes[cardType] === 'object' 
+      ? cardTypes[cardType].id 
+      : cardTypes[cardType];
+
     const debtorData = {
       id: `test-debtor-${timestamp}`,
       cprNumber: this.generateCprNumber(),
-      quickPayCardId: cardTypes[cardType],
+      quickPayCardId: cardId,
       email: `debtor_${timestamp}@debtor.manaotest.com`,
       language: "en",
       phoneNumber: this.generatePhoneNumber(),
